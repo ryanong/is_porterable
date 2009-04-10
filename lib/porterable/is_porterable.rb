@@ -237,9 +237,9 @@ module Porterable
 
     module AsyncExportMethods
 
-      def async_export(export_filename = nil)
+      def async_export(export_filename = nil, options = {})
         export_filename ||= Porterable.export_filename(self.table_name)
-        command = "#{Rails.root}/script/runner \"#{self}.to_csv_file('#{export_path(export_filename)}')\" -e #{Rails.env} 2>&1 >> #{Rails.root}/log/async.log &"
+        command = "#{Rails.root}/script/runner \"#{self}.to_csv_file('#{export_path(export_filename)}', #{options.inspect.gsub(/"/, '\"')})\" -e #{Rails.env} 2>&1 >> #{Rails.root}/log/async.log &"
         logger.info "** running async export with #{command}"
         system command
         export_filename
