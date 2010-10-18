@@ -41,7 +41,7 @@ module Porterable
       def to_csv(options = {}, &block)
         find_options = options[:find] || export_find_options || {}
         not_columns = self.exclude_columns
-        csv_data = FasterCSV.generate do |csv|
+        csv_data = CSV.generate do |csv|
           columns = self.porterable_column_names
           columns.reject! {|c| not_columns.include?(c.to_sym) }
           proc_methods = self.export_proc ? self.export_proc.call(self) : []
@@ -79,7 +79,7 @@ module Porterable
       end
 
       def load_csv_str(data)
-        input = FasterCSV.parse(data)   # FasterCSV returns an array of arrays
+        input = CSV.parse(data)   # CSV returns an array of arrays
         data = []
         keys = input.shift
         # turn each row in the data into a hash (indexed by the name of the columns)

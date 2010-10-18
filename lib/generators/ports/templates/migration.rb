@@ -1,4 +1,4 @@
-class <%= migration_name %> < ActiveRecord::Migration
+class CreatePorts < ActiveRecord::Migration
   def self.up
     create_table :ports do |t|
       #t.column :user_id, :integer
