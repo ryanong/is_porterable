@@ -1,6 +1,4 @@
 class Port < ActiveRecord::Base
-
-  is_sorterable
   
   class << self
     def import(data, test_run = false, reconcile = true)

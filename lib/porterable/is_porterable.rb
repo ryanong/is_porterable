@@ -115,7 +115,7 @@ module Porterable
           # updated_row = self.new.clean_csv_row(updated_row)
           if updated_row
             contact.attributes = updated_row
-            contact.save_with_validation(false) unless test_run
+            contact.save(false) unless test_run
             port[:rows_updated] += 1
           else
             if reconcile
@@ -143,10 +143,10 @@ module Porterable
             end
             port[:rows_updated] += 1
             loaded_contact.valid?
-            loaded_contact.save_with_validation(false) unless test_run
+            loaded_contact.save(false) unless test_run
           else
             new_contact.valid?
-            new_contact.save_with_validation(false) unless test_run
+            new_contact.save(false) unless test_run
             port[:rows_added] += 1
           end
           count += 1

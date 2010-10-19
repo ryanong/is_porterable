@@ -11,9 +11,7 @@ module Porterable
       helper_method :controller_name
 
       def ports
-        Port.with_sort(current_sort) do
-          @ports = #{port_klass}.paginate :order => "created_at DESC", :page => params[:page]
-        end
+        @ports = #{port_klass}.paginate :order => "created_at DESC", :page => params[:page]
         render :template => 'shared/ports'
       end
 
@@ -25,10 +23,10 @@ module Porterable
       def scan
         redirect_to :action => 'import' and return unless request.post?
         @reconcile = params[:import_type].to_i == 1 ? true : false 
-        csv_data = params[:import][:file_data].read
+        csv_data = params[:import][:file_data].read.force_encoding("ISO-8859-1")
         @filename = "csv_data_#{Time.now.to_i}_#{rand(1000)}"
         File.open(File.join(RAILS_ROOT,'tmp',@filename),'w') do |f|
-          f << csv_data
+          f.write(csv_data)
         end
         @port = #{port_klass}.import(csv_data, true, @reconcile)
         render :template => 'shared/scan'
