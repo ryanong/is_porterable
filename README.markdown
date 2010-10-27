@@ -7,7 +7,7 @@ Importing and Exporting is a vital feature for data administration and migration
 Example Usage
 =======
 
-First execute this code `rails generate ports `
+First execute this code `rails generate ports [MODEL]`
 
 in model/address.rb
     class Address < ActiveRecord::Base
@@ -15,9 +15,20 @@ in model/address.rb
     end
 in controller/address_controller.rb
     class AddressController < ApplicationController
-	  include Porterable::Controller
-	end
+	    include Porterable::Controller
+	  end
+	
 in routes
+    resources :address do
+	    collection do
+	      get :ports
+	      get :import
+	      get :export
+	      put :scan
+	      put :execute
+	    end
+	  end
+
 Installation
 =======
 
@@ -33,6 +44,26 @@ Add the "is_porterable" gem to your Gemfile.
 
     rails plugin install git@github.com:ryanong/is_porterable.git
 
+Detailed Usage 
+========
 
+######template
+Use a mapping template to associate other models
+
+######find
+Rails2 style find options
+
+######exclude
+Columns not to export
+
+######export function
+name of function or proc to use on a row of data
+
+######include
+include associated models
+
+######unique
+Default: id
+set different primary key
 
 Copyright (c) 2010 Aaron Quint, released under the MIT license
