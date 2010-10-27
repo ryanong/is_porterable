@@ -1,5 +1,4 @@
--IsPorterable
-
+=IsPorterable
 
 Importing and Exporting is a vital feature for data administration and migration. this plugin tries to make it as easy as possible to import and export data across multiple associated tables. By adding a few lines to the model, controller, routes, and a few views. 
 
@@ -9,24 +8,24 @@ Importing and Exporting is a vital feature for data administration and migration
 First execute this code `rails generate ports [MODEL]`
 
 in model/address.rb
-    class Address < ActiveRecord::Base
-      is_porterable
-    end
+  class Address < ActiveRecord::Base
+    is_porterable
+  end
 in controller/address_controller.rb
-    class AddressController < ApplicationController
-	    include Porterable::Controller
-	  end
+  class AddressController < ApplicationController
+    include Porterable::Controller
+  end
 	
 in routes
-    resources :address do
-	    collection do
-	      get :ports
-	      get :import
-	      get :export
-	      put :scan
-	      put :execute
-	    end
-	  end
+  resources :address do
+	  collection do
+	    get :ports
+	    get :import
+      get :export
+      put :scan
+	    put :execute
+    end
+  end
 
 ==Installation
 
@@ -36,11 +35,11 @@ To install plugin either use gem
 ===Install as gem
 Add the "is_porterable" gem to your Gemfile.
 
-    gem "is_porterable"
+  gem "is_porterable"
 
 ===Install as plugin using git
 
-    rails plugin install git@github.com:ryanong/is_porterable.git
+  rails plugin install git@github.com:ryanong/is_porterable.git
 
 ==Detailed Usage 
 
@@ -65,10 +64,10 @@ set different primary key
 
 ==Generators
 
-`rails generate ports [MODEL]`
+  rails generate ports [MODEL]
 Will create the views, migration, and initial model for template
 
-`rails generate ports_template [MODEL]`
+  rails generate ports_template [MODEL]
 Will create the model and template for the template
 
 Copyright (c) 2010 Aaron Quint, released under the MIT license
