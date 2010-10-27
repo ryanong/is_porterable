@@ -66,4 +66,12 @@ include associated models
 Default: id
 set different primary key
 
+Generators
+========
+`rails generate ports [MODEL]`
+Will create the views, migration, and initial model for template
+
+`rails generate ports_template [MODEL]`
+Will create the model and template for the template
+
 Copyright (c) 2010 Aaron Quint, released under the MIT license
