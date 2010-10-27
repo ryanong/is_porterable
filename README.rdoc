@@ -1,11 +1,10 @@
-is_porterable
-============
+-IsPorterable
+
 
 Importing and Exporting is a vital feature for data administration and migration. this plugin tries to make it as easy as possible to import and export data across multiple associated tables. By adding a few lines to the model, controller, routes, and a few views. 
 
 
-Example Usage
-=======
+==Example Usage
 
 First execute this code `rails generate ports [MODEL]`
 
@@ -29,45 +28,43 @@ in routes
 	    end
 	  end
 
-Installation
-=======
+==Installation
 
 This plugin is only compatible with rails 3 at the moment.
 To install plugin either use gem
 
-### Install as gem
+===Install as gem
 Add the "is_porterable" gem to your Gemfile.
 
     gem "is_porterable"
 
-### Install as plugin using git
+===Install as plugin using git
 
     rails plugin install git@github.com:ryanong/is_porterable.git
 
-Detailed Usage 
-========
+==Detailed Usage 
 
-######template
+====template
 Use a mapping template to associate other models
 
-######find
+====find
 Rails2 style find options
 
-######exclude
+====exclude
 Columns not to export
 
-######export function
+====export function
 name of function or proc to use on a row of data
 
-######include
+====include
 include associated models
 
-######unique
+====unique
 Default: id
 set different primary key
 
-Generators
-========
+==Generators
+
 `rails generate ports [MODEL]`
 Will create the views, migration, and initial model for template
 
