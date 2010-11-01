@@ -42,7 +42,8 @@ Add the "is_porterable" gem to your Gemfile.
   rails plugin install git@github.com:ryanong/is_porterable.git
 
 ==Detailed Usage 
-
+options for is_porterable
+  is_porterable :unique => :name
 ====template
 Use a mapping template to associate other models
 
