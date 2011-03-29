@@ -2,7 +2,7 @@ module Porterable
   module Controller
 
     def self.included(other_mod)
-      klass_name = other_mod.to_s.gsub(/Controller/,'').singularize
+      klass_name = other_mod.to_s.gsub(/Admin::|Controller/,'').singularize
       klass = klass_name.constantize
       port_klass = "#{klass_name}Port".constantize
 
