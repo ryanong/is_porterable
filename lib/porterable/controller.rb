@@ -11,7 +11,7 @@ module Porterable
       helper_method :controller_name
 
       def ports
-        @ports = #{port_klass}.paginate :order => "created_at DESC", :page => params[:page]
+        @ports = #{port_klass}.order("created_at DESC").page(params[:page])
         render :template => 'shared/ports'
       end
 
