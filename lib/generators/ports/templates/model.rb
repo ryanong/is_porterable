@@ -1,10 +1,17 @@
 class Port < ActiveRecord::Base
-  
+  def import(test_run = false, reconcile = true)
+      port_data = port_klass.update_from_csv(data,self.last_export_time, test_run, reconcile)
+      unless test_run
+        self.create(port_data.update(:im_or_ex => 'im', :data => data)) 
+      else
+        port_data
+      end
+  end
   class << self
     def import(data, test_run = false, reconcile = true)
       port_data = port_klass.update_from_csv(data,self.last_export_time, test_run, reconcile)
       unless test_run
-        self.create(port_data.update(:im_or_ex => 'im')) 
+        self.create(port_data.update(:im_or_ex => 'im', :data => data)) 
       else
         port_data
       end

@@ -24,17 +24,14 @@ module Porterable
         redirect_to :action => 'import' and return unless request.post?
         @reconcile = params[:import_type].to_i == 1 ? true : false 
         csv_data = params[:import][:file_data].read.force_encoding("ISO-8859-1")
-        @filename = "csv_data_#{Time.now.to_i}_#{rand(1000)}"
-        File.open(File.join(RAILS_ROOT,'tmp',@filename),'w') do |f|
-          f.write(csv_data)
-        end
         @port = #{port_klass}.import(csv_data, true, @reconcile)
         render :template => 'shared/scan'
       end
 
       def execute
         redirect_to :action => 'import' and return unless request.post?
-        @port = #{port_klass}.import(File.open(File.join(RAILS_ROOT,'tmp',params[:filename]),'r') {|f| f.read }, false, params[:reconcile].to_i == 1 ? true : false )
+        @port = #{port_klass}.find(params[:id])
+        @port = @port.import(false, params[:reconcile].to_i == 1 ? true : false )
         flash[:message] = 'File Import Successful.'
         redirect_to :action => 'ports'
       end
