@@ -11,7 +11,7 @@ module Porterable
       helper_method :controller_name
 
       def ports
-        @ports = #{port_klass}.order("created_at DESC").page(params[:page])
+        @ports = #{port_klass}.paginate :order => "created_at DESC", :page => params[:page]
         render :template => 'shared/ports'
       end
 
@@ -21,17 +21,21 @@ module Porterable
       end
 
       def scan
-        redirect_to :action => 'import' and return unless request.post?
-        @reconcile = params[:import_type].to_i == 1 ? true : false 
-        csv_data = params[:import][:file_data].read.force_encoding("ISO-8859-1")
-        @port = #{port_klass}.import(csv_data, true, @reconcile)
+        if request.post?
+          @reconcile = params[:import_type].to_i == 1 ? true : false 
+          csv_data = params[:import][:file_data].read.force_encoding("ISO-8859-1")
+          @port = #{port_klass}.load_csv(csv_data, @reconcile)
+        else
+          @reconcile = params[:import_type].to_i == 1 ? true : false 
+          @port = #{port_klass}.find(params[:id])
+        end
         render :template => 'shared/scan'
       end
 
       def execute
         redirect_to :action => 'import' and return unless request.post?
         @port = #{port_klass}.find(params[:id])
-        @port = @port.import(false, params[:reconcile].to_i == 1 ? true : false )
+        @port = @port.import(params[:reconcile].to_i == 1 ? true : false )
         flash[:message] = 'File Import Successful.'
         redirect_to :action => 'ports'
       end
