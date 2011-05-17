@@ -1,6 +1,6 @@
 require 'rails/generators'
 require 'rails/generators/migration'
-class PortsGenerator < Rails::Generators::NamedBase
+class PortsModelGenerator < Rails::Generators::NamedBase
   include Rails::Generators::Migration
   source_root File.expand_path('../templates', __FILE__)
   def manifest
