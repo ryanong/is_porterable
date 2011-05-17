@@ -6,6 +6,7 @@ class PortsModelGenerator < Rails::Generators::NamedBase
   def manifest
 
     template('sub_model.rb', File.join('app/models', "#{file_name}_port.rb"))
+    template('sub_model_template.rb', File.join('app/models', "#{file_name}_port_template.rb"))
 
   end
   
