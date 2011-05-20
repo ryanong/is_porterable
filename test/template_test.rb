@@ -1,6 +1,6 @@
 require File.expand_path(File.join(File.dirname(__FILE__), 'test_helper'))
 
-class TemplateTest < Test::Unit::TestCase
+class TemplateTest < ActiveSupport::TestCase
   
   class TestTemplate < Quirkey::Porterable::Template
     set_map 'first_name', 'last_name', ['billing_address_address_1', 'billing_address.address_1']

@@ -1,6 +1,6 @@
 require File.expand_path(File.join(File.dirname(__FILE__), 'test_helper'))
 
-class IsPorterableTest < Test::Unit::TestCase
+class IsPorterableTest < ActiveSupport::TestCase
 
   def test_a_porterable_model_should_export_all_attributes_to_csv
     csv = User.to_csv

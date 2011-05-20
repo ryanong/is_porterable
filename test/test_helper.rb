@@ -1,11 +1,12 @@
 RAILS_ENV = 'test'
 require 'rubygems'
 require 'test/unit'
+require 'active_record'
 require 'yaml'
-require 'activerecord'
+require 'logger'
+require 'active_support/all'
 require File.expand_path(File.join(File.dirname(__FILE__), '../lib/porterable'))
-
-class Test::Unit::TestCase
+class ActiveSupport::TestCase
   
   fixtures :all
   

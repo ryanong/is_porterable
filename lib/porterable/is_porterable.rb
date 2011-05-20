@@ -41,7 +41,7 @@ module Porterable
       def to_csv(options = {}, &block)
         find_options = options[:find] || export_find_options || {}
         not_columns = self.exclude_columns
-        csv_data = CSV.generate do |csv|
+        csv_data = CSV.generate(:encoding => "UTF-8") do |csv|
           columns = self.porterable_column_names
           columns.reject! {|c| not_columns.include?(c.to_sym) }
           proc_methods = self.export_proc ? self.export_proc.call(self) : []
@@ -111,7 +111,7 @@ module Porterable
         count = 0
         yield(count, total_rows) if block_given?
         db.each do |contact|
-          updated_row = old_rows.find {|row| row['id'].to_i == contact.id}
+          updated_row = old_rows.delete_at(old_rows.index {|row| row['id'].to_i == contact.id})
           # updated_row = self.new.clean_csv_row(updated_row)
           if updated_row
             contact.attributes = updated_row
@@ -127,6 +127,7 @@ module Porterable
           yield(count, total_rows) if block_given?
           contact = nil
         end
+        new_rows += old_rows
         new_rows.each do |row|
           #create new rows
           #new rows should update the row user from the db
