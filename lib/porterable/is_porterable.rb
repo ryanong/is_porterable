@@ -97,24 +97,29 @@ module Porterable
         port = {}
         csv_data = self.load_csv_str(data)
         # partition to new rows and old rows
-        new_rows, old_rows = csv_data.partition {|row| row['id'].nil? }
+        new_rows, old_rows = csv_data.partition {|row| row[self.primary_key].nil? }
         # update and delete
         logger.info "** only_before value = #{only_before}"
         db = self.find(:all,:conditions => ["created_at < ? ",only_before])
         logger.info "** db rows count = #{db.size}"
+        logger.info "** CSV rows count = #{csv_data.size}"
         port[:data] = data
         port[:rows_updated] = 0
         port[:rows_deleted] = 0
         port[:rows_added]   = 0
         total_rows = db.length + new_rows.length
-        logger.info "** CSV rows count = #{total_rows}"
         count = 0
         yield(count, total_rows) if block_given?
         db.each do |contact|
-          updated_row = old_rows.delete_at(old_rows.index {|row| row['id'].to_i == contact.id})
+          updated_row = old_rows.delete_at(old_rows.index {|row| row[self.primary_key].to_s == contact[self.primary_key].to_s})
           # updated_row = self.new.clean_csv_row(updated_row)
           if updated_row
-            contact.attributes = updated_row
+            updated_row.delete(self.primary_key)
+            unless template_class
+              contact.attributes = updated_row
+            else
+              contact = template_class.translate_in(contact,updated_row)
+            end
             contact.save(:validate => false) unless test_run
             port[:rows_updated] += 1
           else
@@ -128,6 +133,7 @@ module Porterable
           contact = nil
         end
         new_rows += old_rows
+        logger.warn("NEWROWS #{new_rows.size}")
         new_rows.each do |row|
           #create new rows
           #new rows should update the row user from the db
@@ -136,6 +142,7 @@ module Porterable
           else
             new_contact = template_class.translate_in(self,row)
           end
+          new_contact[self.primary_key] = row[self.primary_key] if row[self.primary_key]
           if self.unique_field && self.unique_field.is_a?(Symbol) && loaded_contact = self.send("find_by_#{self.unique_field}", new_contact.send(self.unique_field))
             if template_class
               template_class.translate_in(loaded_contact, row) 
@@ -143,10 +150,10 @@ module Porterable
               loaded_contact.attributes = row
             end
             port[:rows_updated] += 1
-            loaded_contact.valid?
+            loaded_contact.errors unless loaded_contact.valid?
             loaded_contact.save(:validate => false) unless test_run
           else
-            new_contact.valid?
+            logger.warn new_contact.errors unless new_contact.valid?
             new_contact.save(:validate => false) unless test_run
             port[:rows_added] += 1
           end
@@ -155,6 +162,7 @@ module Porterable
           loaded_contact = nil
           yield(count, total_rows) if block_given?
         end
+        logger.warn("processed #{count}")
         port
       end
 
@@ -243,7 +251,7 @@ module Porterable
         command = "#{Rails.root}/script/runner \"#{self}.to_csv_file('#{export_path(export_filename)}', #{options.inspect.gsub(/"/, '\"')})\" -e #{Rails.env} 2>&1 >> #{Rails.root}/log/async.log &"
         logger.info "** running async export with #{command}"
         system command
-        export_filename
+          export_filename
       end
 
       def export_path(filename)
