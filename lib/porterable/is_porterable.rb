@@ -9,7 +9,7 @@ module Porterable
         @template_class       = options[:template] || nil
         @export_find_options  = options[:find] || nil
         @exclude_columns      = options[:exclude] || []
-        if options[:export] && options[:export].is_a?(Proc) 
+        if options[:export] && options[:export].is_a?(Proc)
           @export_proc          = options[:export]
           @export_methods       = []
         else
@@ -97,7 +97,7 @@ module Porterable
         port = {}
         csv_data = self.load_csv_str(data)
         # partition to new rows and old rows
-        new_rows, old_rows = csv_data.partition {|row| row['id'].nil? }
+        new_rows, old_rows = csv_data.partition {|row| row[self.unique_field].nil? }
         # update and delete
         logger.info "** only_before value = #{only_before}"
         db = self.find(:all,:conditions => ["created_at < ? ",only_before])
@@ -111,10 +111,15 @@ module Porterable
         count = 0
         yield(count, total_rows) if block_given?
         db.each do |contact|
-          updated_row = old_rows.find {|row| row['id'].to_i == contact.id}
+          updated_row = old_rows.find {|row| row[self.unique_field].to_s == contact.send(self.unique_field).to_s}
           # updated_row = self.new.clean_csv_row(updated_row)
           if updated_row
-            contact.attributes = updated_row
+            if template_class
+              template_class.translate_in(updated_row, updated_row)
+            else
+              updated_row.attributes = updated_row
+            end
+            contact.valid?
             contact.save(:validate => false) unless test_run
             port[:rows_updated] += 1
           else
@@ -137,7 +142,7 @@ module Porterable
           end
           if self.unique_field && self.unique_field.is_a?(Symbol) && loaded_contact = self.send("find_by_#{self.unique_field}", new_contact.send(self.unique_field))
             if template_class
-              template_class.translate_in(loaded_contact, row) 
+              template_class.translate_in(loaded_contact, row)
             else
               loaded_contact.attributes = row
             end
@@ -194,7 +199,7 @@ module Porterable
           value = self[column_name]
         end
         if value.is_a?(Time)
-          value.strftime('%m/%d/%Y %H:%M:%S') 
+          value.strftime('%m/%d/%Y %H:%M:%S')
         else
           value
         end
@@ -242,7 +247,7 @@ module Porterable
         command = "#{Rails.root}/script/runner \"#{self}.to_csv_file('#{export_path(export_filename)}', #{options.inspect.gsub(/"/, '\"')})\" -e #{Rails.env} 2>&1 >> #{Rails.root}/log/async.log &"
         logger.info "** running async export with #{command}"
         system command
-        export_filename
+          export_filename
       end
 
       def export_path(filename)
