@@ -9,14 +9,14 @@ module Porterable
         @template_class       = options[:template] || nil
         @export_find_options  = options[:find] || nil
         @exclude_columns      = options[:exclude] || []
-        if options[:export] && options[:export].is_a?(Proc) 
+        if options[:export] && options[:export].is_a?(Proc)
           @export_proc          = options[:export]
           @export_methods       = []
         else
           @export_methods       = options[:export] || []
         end
         @include_associations = options[:include] || []
-        @unique_field         = options[:unique] || :id
+        @unique_field         = options[:unique] || self.primary_key
 
         # add name and remove id for included associations
         @include_associations.each do |association|
@@ -97,7 +97,7 @@ module Porterable
         port = {}
         csv_data = self.load_csv_str(data)
         # partition to new rows and old rows
-        new_rows, old_rows = csv_data.partition {|row| row[self.primary_key].nil? }
+        new_rows, old_rows = csv_data.partition {|row| row[self.unique_field].nil? }
         # update and delete
         logger.info "** only_before value = #{only_before}"
         db = self.find(:all,:conditions => ["created_at < ? ",only_before])
@@ -111,15 +111,15 @@ module Porterable
         count = 0
         yield(count, total_rows) if block_given?
         db.each do |contact|
-          updated_row = old_rows.delete_at(old_rows.index {|row| row[self.primary_key].to_s == contact[self.primary_key].to_s})
+          updated_row = old_rows.find {|row| row[self.unique_field].to_s == contact.send(self.unique_field).to_s}
           # updated_row = self.new.clean_csv_row(updated_row)
           if updated_row
-            updated_row.delete(self.primary_key)
-            unless template_class
-              contact.attributes = updated_row
+            if template_class
+              template_class.translate_in(updated_row, updated_row)
             else
-              contact = template_class.translate_in(contact,updated_row)
+              updated_row.attributes = updated_row
             end
+            contact.valid?
             contact.save(:validate => false) unless test_run
             port[:rows_updated] += 1
           else
@@ -145,7 +145,7 @@ module Porterable
           new_contact[self.primary_key] = row[self.primary_key] if row[self.primary_key]
           if self.unique_field && self.unique_field.is_a?(Symbol) && loaded_contact = self.send("find_by_#{self.unique_field}", new_contact.send(self.unique_field))
             if template_class
-              template_class.translate_in(loaded_contact, row) 
+              template_class.translate_in(loaded_contact, row)
             else
               loaded_contact.attributes = row
             end
@@ -203,7 +203,7 @@ module Porterable
           value = self[column_name]
         end
         if value.is_a?(Time)
-          value.strftime('%m/%d/%Y %H:%M:%S') 
+          value.strftime('%m/%d/%Y %H:%M:%S')
         else
           value
         end
