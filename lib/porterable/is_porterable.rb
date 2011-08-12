@@ -115,9 +115,9 @@ module Porterable
           # updated_row = self.new.clean_csv_row(updated_row)
           if updated_row
             if template_class
-              template_class.translate_in(updated_row, updated_row)
+              template_class.translate_in(contact, updated_row)
             else
-              updated_row.attributes = updated_row
+              contact.attributes = updated_row
             end
             contact.valid?
             contact.save(:validate => false) unless test_run
