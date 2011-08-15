@@ -79,18 +79,7 @@ module Porterable
       end
 
       def load_csv_str(data)
-        input = CSV.parse(data)   # CSV returns an array of arrays
-        data = []
-        keys = input.shift
-        # turn each row in the data into a hash (indexed by the name of the columns)
-        input.each do |row|
-          row_data = {}
-          keys.each_with_index do |key,i|
-            row_data[(key || "").strip] = row[i]
-          end
-          data << row_data
-        end
-        data
+        CSV.parse(data, :headers => true, :skip_blanks => true)   # CSV returns an array of arrays
       end
 
       def update_from_csv(data, only_before = Time.now, test_run = false, reconcile = true, &block)
@@ -100,7 +89,7 @@ module Porterable
         new_rows, old_rows = csv_data.partition {|row| row[self.unique_field].nil? }
         # update and delete
         logger.info "** only_before value = #{only_before}"
-        db = self.find(:all,:conditions => ["created_at < ? ",only_before])
+        db = self.all
         logger.info "** db rows count = #{db.size}"
         logger.info "** CSV rows count = #{csv_data.size}"
         port[:data] = data
@@ -111,9 +100,8 @@ module Porterable
         count = 0
         yield(count, total_rows) if block_given?
         db.each do |contact|
-          updated_row = old_rows.find {|row| row[self.unique_field].to_s == contact.send(self.unique_field).to_s}
-          # updated_row = self.new.clean_csv_row(updated_row)
-          if updated_row
+
+          if updated_row = old_rows.delete_if {|row| row[self.unique_field].to_s == contact.send(self.unique_field).to_s}.first
             if template_class
               template_class.translate_in(contact, updated_row)
             else
@@ -142,21 +130,9 @@ module Porterable
           else
             new_contact = template_class.translate_in(self,row)
           end
-          new_contact[self.primary_key] = row[self.primary_key] if row[self.primary_key]
-          if self.unique_field && self.unique_field.is_a?(Symbol) && loaded_contact = self.send("find_by_#{self.unique_field}", new_contact.send(self.unique_field))
-            if template_class
-              template_class.translate_in(loaded_contact, row)
-            else
-              loaded_contact.attributes = row
-            end
-            port[:rows_updated] += 1
-            loaded_contact.errors unless loaded_contact.valid?
-            loaded_contact.save(:validate => false) unless test_run
-          else
-            logger.warn new_contact.errors unless new_contact.valid?
-            new_contact.save(:validate => false) unless test_run
-            port[:rows_added] += 1
-          end
+          logger.warn new_contact.errors unless new_contact.valid?
+          new_contact.save(:validate => false) unless test_run
+          port[:rows_added] += 1
           count += 1
           new_contact = nil
           loaded_contact = nil
@@ -164,6 +140,10 @@ module Porterable
         end
         logger.warn("processed #{count}")
         port
+      end
+
+      def unique_field
+        @unique_field || self.primary_key
       end
 
       def template_class
