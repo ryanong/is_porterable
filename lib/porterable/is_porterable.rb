@@ -100,7 +100,6 @@ module Porterable
         count = 0
         yield(count, total_rows) if block_given?
         db.each do |contact|
-
           if updated_row = old_rows.delete_if {|row| row[self.unique_field].to_s == contact.send(self.unique_field).to_s}.first
             if template_class
               template_class.translate_in(contact, updated_row)
@@ -119,6 +118,7 @@ module Porterable
           count += 1
           yield(count, total_rows) if block_given?
           contact = nil
+          updated_row = nil
         end
         new_rows += old_rows
         logger.warn("NEWROWS #{new_rows.size}")
