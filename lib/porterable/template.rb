@@ -20,7 +20,7 @@ module Porterable
       def columns
         @columns ||= {}
       end
-      
+
       def translate_out(model_instance, column_name)
         column = columns[column_name]
         return nil unless column
@@ -39,17 +39,12 @@ module Porterable
       rescue NoMethodError => e
         warn e
       end
-      
+
       def translate_in(model_class_or_instance, row)
         model_instance = model_class_or_instance.is_a?(Class) ? model_class_or_instance.new : model_class_or_instance
         row.each do |column_name, value|
-          column = columns[column_name]
-          if column
-            # Convert double-quotes into escaped double quotes (e.g. " => \")
-            escaped_value = value ? value.gsub("\"", "\\\"") : ""
-            # RAILS_DEFAULT_LOGGER.warn escaped_value
-            translation = "self.#{column} = \"#{escaped_value}\""
-            model_instance.instance_eval(translation)
+          if column = columns[column_name]
+            model_instance.send("#{column}=",value)
           end
         end
         model_instance
