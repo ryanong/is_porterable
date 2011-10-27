@@ -99,14 +99,14 @@ module Porterable
         total_rows = db.length + new_rows.length
         count = 0
         yield(count, total_rows) if block_given?
+        old_rows = old_rows.inject({}) { |h,row| h.merge({row[self.unique_field].to_s => row})}
         db.each do |contact|
-          if updated_row = old_rows.delete_if {|row| row[self.unique_field].to_s == contact.send(self.unique_field).to_s}.first
+          if updated_row = old_rows.delete(contact.send(self.unique_field).to_s)
             if template_class
               template_class.translate_in(contact, updated_row)
             else
               contact.attributes = updated_row
             end
-            contact.valid?
             contact.save(:validate => false) unless test_run
             port[:rows_updated] += 1
           else
@@ -125,11 +125,7 @@ module Porterable
         new_rows.each do |row|
           #create new rows
           #new rows should update the row user from the db
-          unless template_class
-            new_contact = self.new(row)
-          else
-            new_contact = template_class.translate_in(self,row)
-          end
+          new_contact = template_class ? template_class.translate_in(self,row) : self.new(row)
           logger.warn new_contact.errors unless new_contact.valid?
           new_contact.save(:validate => false) unless test_run
           port[:rows_added] += 1
