@@ -120,7 +120,7 @@ module Porterable
           contact = nil
           updated_row = nil
         end
-        new_rows += old_rows
+        new_rows += old_rows.values
         logger.warn("NEWROWS #{new_rows.size}")
         new_rows.each do |row|
           #create new rows
